@@ -69,7 +69,7 @@ const Index = () => {
                 BENDECK TOOLS
               </h2>
               <p className="text-muted-foreground text-sm mt-2">
-                Herramientas Manuales Premium
+                Herramientas Manuales y Eléctricas
               </p>
             </div>
             <div className="w-full h-1 bg-secondary rounded-full overflow-hidden">
@@ -104,7 +104,7 @@ const Index = () => {
                 LÜSQTOFF
               </h2>
               <p className="text-muted-foreground text-sm mt-2">
-                Herramientas Eléctricas Profesionales
+                Herramientas Manuales y Eléctricas
               </p>
             </div>
             <div className="w-full h-1 bg-secondary rounded-full overflow-hidden">
