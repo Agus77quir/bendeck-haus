@@ -18,7 +18,8 @@ const Auth = () => {
   const { toast } = useToast();
   const selectedBusiness = useBusinessStore((state) => state.selectedBusiness);
   
-  const [isLogin, setIsLogin] = useState(true);
+  // Only login mode - no registration allowed
+  const isLogin = true;
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
@@ -84,44 +85,6 @@ const Auth = () => {
         toast({
           title: "¡Bienvenido!",
           description: "Has iniciado sesión correctamente",
-        });
-        
-        navigate("/dashboard");
-      } else {
-        const redirectUrl = `${window.location.origin}/dashboard`;
-        
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: redirectUrl,
-            data: {
-              full_name: fullName,
-            },
-          },
-        });
-        
-        if (error) {
-          if (error.message.includes("already registered")) {
-            toast({
-              title: "Usuario existente",
-              description: "Este email ya está registrado. Por favor, inicia sesión.",
-              variant: "destructive",
-            });
-            setIsLogin(true);
-          } else {
-            toast({
-              title: "Error",
-              description: error.message,
-              variant: "destructive",
-            });
-          }
-          return;
-        }
-        
-        toast({
-          title: "¡Registro exitoso!",
-          description: "Tu cuenta ha sido creada. Puedes iniciar sesión ahora.",
         });
         
         navigate("/dashboard");
@@ -276,18 +239,6 @@ const Auth = () => {
             </Button>
           </form>
 
-          {/* Toggle login/signup */}
-          <div className="mt-6 text-center">
-            <p className="text-muted-foreground text-sm">
-              {isLogin ? "¿No tienes cuenta?" : "¿Ya tienes cuenta?"}
-              <button
-                onClick={() => setIsLogin(!isLogin)}
-                className="ml-2 text-primary hover:text-orange-light transition-colors font-medium"
-              >
-                {isLogin ? "Regístrate" : "Inicia Sesión"}
-              </button>
-            </p>
-          </div>
         </div>
       </div>
     </div>
