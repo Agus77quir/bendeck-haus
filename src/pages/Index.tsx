@@ -53,24 +53,15 @@ const Index = () => {
           onClick={() => handleBusinessSelect('bendeck_tools')}
           className="group glass-card p-8 md:p-10 w-full md:w-96 transition-all duration-500 hover:scale-105 hover:orange-glow cursor-pointer"
         >
-          <div className="flex flex-col items-center gap-5">
-            <div className="relative w-48 h-32 flex items-center justify-center overflow-hidden rounded-lg">
+        <div className="flex flex-col items-center">
+            <div className="w-full h-48 flex items-center justify-center overflow-hidden rounded-lg">
               <img 
                 src={bendeckToolsLogo} 
                 alt="Bendeck Tools Logo" 
-                className="w-full h-full object-contain transition-all duration-300 group-hover:scale-110"
-              />
-              <GearIcon 
-                className="absolute -bottom-2 -right-2 w-8 h-8 text-primary/40 group-hover:text-primary transition-colors" 
-                animate 
+                className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105"
               />
             </div>
-            <div className="text-center">
-              <p className="text-muted-foreground text-sm">
-                Herramientas Manuales y Eléctricas
-              </p>
-            </div>
-            <div className="w-full h-1 bg-secondary rounded-full overflow-hidden">
+            <div className="w-full h-1 bg-secondary rounded-full overflow-hidden mt-4">
               <div className="h-full w-0 group-hover:w-full bg-gradient-to-r from-primary to-orange-light transition-all duration-500" />
             </div>
           </div>
@@ -86,25 +77,15 @@ const Index = () => {
           onClick={() => handleBusinessSelect('lusqtoff')}
           className="group glass-card p-8 md:p-10 w-full md:w-96 transition-all duration-500 hover:scale-105 hover:orange-glow cursor-pointer"
         >
-          <div className="flex flex-col items-center gap-5">
-            <div className="relative w-48 h-32 flex items-center justify-center overflow-hidden rounded-lg">
+        <div className="flex flex-col items-center">
+            <div className="w-full h-48 flex items-center justify-center overflow-hidden rounded-lg">
               <img 
                 src={lusqtoffLogo} 
                 alt="Lüsqtoff Logo" 
-                className="w-full h-full object-contain transition-all duration-300 group-hover:scale-110"
-              />
-              <GearIcon 
-                className="absolute -bottom-2 -right-2 w-8 h-8 text-primary/40 group-hover:text-primary transition-colors" 
-                animate 
-                style={{ animationDirection: 'reverse' }}
+                className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105"
               />
             </div>
-            <div className="text-center">
-              <p className="text-muted-foreground text-sm">
-                Herramientas Manuales y Eléctricas
-              </p>
-            </div>
-            <div className="w-full h-1 bg-secondary rounded-full overflow-hidden">
+            <div className="w-full h-1 bg-secondary rounded-full overflow-hidden mt-4">
               <div className="h-full w-0 group-hover:w-full bg-gradient-to-r from-primary to-orange-light transition-all duration-500" />
             </div>
           </div>
