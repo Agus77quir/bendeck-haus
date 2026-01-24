@@ -1,9 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { GearIcon } from "@/components/icons/GearIcon";
-import { WrenchIcon } from "@/components/icons/WrenchIcon";
-import { DrillIcon } from "@/components/icons/DrillIcon";
 import { useBusinessStore, BusinessType } from "@/stores/businessStore";
-
+import bendeckToolsLogo from "@/assets/bendeck-tools-logo.png";
+import lusqtoffLogo from "@/assets/lusqtoff-logo.png";
 const Index = () => {
   const navigate = useNavigate();
   const setSelectedBusiness = useBusinessStore((state) => state.setSelectedBusiness);
@@ -52,23 +51,22 @@ const Index = () => {
         {/* Bendeck Tools Card */}
         <button
           onClick={() => handleBusinessSelect('bendeck_tools')}
-          className="group glass-card p-8 md:p-12 w-full md:w-80 transition-all duration-500 hover:scale-105 hover:orange-glow cursor-pointer"
+          className="group glass-card p-8 md:p-10 w-full md:w-96 transition-all duration-500 hover:scale-105 hover:orange-glow cursor-pointer"
         >
-          <div className="flex flex-col items-center gap-6">
-            <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-orange-dark flex items-center justify-center group-hover:animate-pulse-orange transition-all">
-                <WrenchIcon className="w-12 h-12 text-primary-foreground" />
-              </div>
+          <div className="flex flex-col items-center gap-5">
+            <div className="relative w-48 h-32 flex items-center justify-center overflow-hidden rounded-lg">
+              <img 
+                src={bendeckToolsLogo} 
+                alt="Bendeck Tools Logo" 
+                className="w-full h-full object-contain transition-all duration-300 group-hover:scale-110"
+              />
               <GearIcon 
-                className="absolute -bottom-2 -right-2 w-10 h-10 text-primary/60 group-hover:text-primary transition-colors" 
+                className="absolute -bottom-2 -right-2 w-8 h-8 text-primary/40 group-hover:text-primary transition-colors" 
                 animate 
               />
             </div>
             <div className="text-center">
-              <h2 className="text-2xl font-display font-bold text-foreground group-hover:text-primary transition-colors">
-                BENDECK TOOLS
-              </h2>
-              <p className="text-muted-foreground text-sm mt-2">
+              <p className="text-muted-foreground text-sm">
                 Herramientas Manuales y Eléctricas
               </p>
             </div>
@@ -86,24 +84,23 @@ const Index = () => {
         {/* Lüsqtoff Card */}
         <button
           onClick={() => handleBusinessSelect('lusqtoff')}
-          className="group glass-card p-8 md:p-12 w-full md:w-80 transition-all duration-500 hover:scale-105 hover:orange-glow cursor-pointer"
+          className="group glass-card p-8 md:p-10 w-full md:w-96 transition-all duration-500 hover:scale-105 hover:orange-glow cursor-pointer"
         >
-          <div className="flex flex-col items-center gap-6">
-            <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-orange-dark flex items-center justify-center group-hover:animate-pulse-orange transition-all">
-                <DrillIcon className="w-12 h-12 text-primary-foreground" />
-              </div>
+          <div className="flex flex-col items-center gap-5">
+            <div className="relative w-48 h-32 flex items-center justify-center overflow-hidden rounded-lg">
+              <img 
+                src={lusqtoffLogo} 
+                alt="Lüsqtoff Logo" 
+                className="w-full h-full object-contain transition-all duration-300 group-hover:scale-110"
+              />
               <GearIcon 
-                className="absolute -bottom-2 -right-2 w-10 h-10 text-primary/60 group-hover:text-primary transition-colors" 
+                className="absolute -bottom-2 -right-2 w-8 h-8 text-primary/40 group-hover:text-primary transition-colors" 
                 animate 
                 style={{ animationDirection: 'reverse' }}
               />
             </div>
             <div className="text-center">
-              <h2 className="text-2xl font-display font-bold text-foreground group-hover:text-primary transition-colors">
-                LÜSQTOFF
-              </h2>
-              <p className="text-muted-foreground text-sm mt-2">
+              <p className="text-muted-foreground text-sm">
                 Herramientas Manuales y Eléctricas
               </p>
             </div>
