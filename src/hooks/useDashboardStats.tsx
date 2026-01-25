@@ -53,72 +53,60 @@ export const useDashboardStats = () => {
       const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
-      // Base query filter
-      const businessFilter = !isAdmin && selectedBusiness ? { business: selectedBusiness } : {};
+      // Build base queries with business filter
+      const addBusinessFilter = (query: any) => {
+        if (selectedBusiness && !isAdmin) {
+          return query.eq('business', selectedBusiness);
+        }
+        return query;
+      };
 
-      // Fetch sales today
-      let salesTodayQuery = supabase
-        .from('sales')
-        .select('total')
-        .gte('created_at', todayStart)
-        .eq('status', 'completed');
-      
-      if (selectedBusiness && !isAdmin) {
-        salesTodayQuery = salesTodayQuery.eq('business', selectedBusiness);
-      }
-      
-      const { data: salesToday } = await salesTodayQuery;
-      
-      // Fetch sales this week
-      let salesWeekQuery = supabase
-        .from('sales')
-        .select('total')
-        .gte('created_at', weekStart)
-        .eq('status', 'completed');
-      
-      if (selectedBusiness && !isAdmin) {
-        salesWeekQuery = salesWeekQuery.eq('business', selectedBusiness);
-      }
-      
-      const { data: salesWeek } = await salesWeekQuery;
+      // Execute all main queries in parallel
+      const [
+        salesTodayResult,
+        salesWeekResult,
+        salesMonthResult,
+        productsResult,
+        customersResult,
+        saleItemsResult
+      ] = await Promise.all([
+        // Sales today
+        addBusinessFilter(
+          supabase.from('sales').select('total').gte('created_at', todayStart).eq('status', 'completed')
+        ),
+        // Sales week
+        addBusinessFilter(
+          supabase.from('sales').select('total').gte('created_at', weekStart).eq('status', 'completed')
+        ),
+        // Sales month
+        addBusinessFilter(
+          supabase.from('sales').select('total').gte('created_at', monthStart).eq('status', 'completed')
+        ),
+        // Products
+        addBusinessFilter(
+          supabase.from('products').select('id, stock, min_stock', { count: 'exact' })
+        ),
+        // Customers
+        addBusinessFilter(
+          supabase.from('customers').select('id', { count: 'exact' })
+        ),
+        // Sale items for top products
+        supabase
+          .from('sale_items')
+          .select(`quantity, total, product_id, products!inner(id, name, code, business)`)
+          .gte('created_at', monthStart)
+      ]);
 
-      // Fetch sales this month
-      let salesMonthQuery = supabase
-        .from('sales')
-        .select('total')
-        .gte('created_at', monthStart)
-        .eq('status', 'completed');
-      
-      if (selectedBusiness && !isAdmin) {
-        salesMonthQuery = salesMonthQuery.eq('business', selectedBusiness);
-      }
-      
-      const { data: salesMonth } = await salesMonthQuery;
-
-      // Fetch products count
-      let productsQuery = supabase
-        .from('products')
-        .select('id, stock, min_stock', { count: 'exact' });
-      
-      if (selectedBusiness && !isAdmin) {
-        productsQuery = productsQuery.eq('business', selectedBusiness);
-      }
-      
-      const { data: products, count: productsCount } = await productsQuery;
+      const salesToday = salesTodayResult.data;
+      const salesWeek = salesWeekResult.data;
+      const salesMonth = salesMonthResult.data;
+      const products = productsResult.data;
+      const productsCount = productsResult.count;
+      const customersCount = customersResult.count;
+      const saleItems = saleItemsResult.data;
 
       // Count low stock products
       const lowStock = products?.filter(p => p.stock <= p.min_stock).length || 0;
-
-      // Fetch customers count
-      let customersQuery = supabase
-        .from('customers')
-        .select('id', { count: 'exact' });
-      
-      if (selectedBusiness && !isAdmin) {
-        customersQuery = customersQuery.eq('business', selectedBusiness);
-      }
-      
-      const { count: customersCount } = await customersQuery;
 
       setStats({
         totalSalesToday: salesToday?.reduce((acc, s) => acc + Number(s.total), 0) || 0,
@@ -130,26 +118,12 @@ export const useDashboardStats = () => {
         salesCount: salesToday?.length || 0,
       });
 
-      // Fetch top selling products (from sale_items)
-      let saleItemsQuery = supabase
-        .from('sale_items')
-        .select(`
-          quantity,
-          total,
-          product_id,
-          products!inner(id, name, code, business)
-        `)
-        .gte('created_at', monthStart);
-
-      const { data: saleItems } = await saleItemsQuery;
-
+      // Process top products
       if (saleItems) {
-        // Filter by business if needed
         const filteredItems = !isAdmin && selectedBusiness
           ? saleItems.filter((item: any) => item.products?.business === selectedBusiness)
           : saleItems;
 
-        // Aggregate by product
         const productSales = filteredItems.reduce((acc: Record<string, TopProduct>, item: any) => {
           const productId = item.product_id;
           if (!acc[productId]) {
@@ -171,60 +145,43 @@ export const useDashboardStats = () => {
         setLeastSoldProducts(sortedProducts.slice(-5).reverse());
       }
 
-      // Fetch daily sales for last 7 days
-      const last7Days: SalesData[] = [];
-      for (let i = 6; i >= 0; i--) {
-        const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+      // Generate daily sales data for last 7 days - fetch all at once
+      const dailySalesPromises = Array.from({ length: 7 }, (_, i) => {
+        const date = new Date(now.getTime() - (6 - i) * 24 * 60 * 60 * 1000);
         const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate()).toISOString();
         const dayEnd = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1).toISOString();
 
-        let dayQuery = supabase
-          .from('sales')
-          .select('total')
-          .gte('created_at', dayStart)
-          .lt('created_at', dayEnd)
-          .eq('status', 'completed');
-
-        if (selectedBusiness && !isAdmin) {
-          dayQuery = dayQuery.eq('business', selectedBusiness);
-        }
-
-        const { data: daySales } = await dayQuery;
-
-        last7Days.push({
+        return addBusinessFilter(
+          supabase.from('sales').select('total').gte('created_at', dayStart).lt('created_at', dayEnd).eq('status', 'completed')
+        ).then(result => ({
           date: date.toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric' }),
-          total: daySales?.reduce((acc, s) => acc + Number(s.total), 0) || 0,
-          count: daySales?.length || 0,
-        });
-      }
-      setDailySales(last7Days);
+          total: result.data?.reduce((acc, s) => acc + Number(s.total), 0) || 0,
+          count: result.data?.length || 0,
+        }));
+      });
 
-      // Fetch weekly sales for last 4 weeks
-      const last4Weeks: SalesData[] = [];
-      for (let i = 3; i >= 0; i--) {
-        const weekEnd = new Date(now.getTime() - i * 7 * 24 * 60 * 60 * 1000);
+      // Generate weekly sales data for last 4 weeks - fetch all at once
+      const weeklySalesPromises = Array.from({ length: 4 }, (_, i) => {
+        const weekEnd = new Date(now.getTime() - (3 - i) * 7 * 24 * 60 * 60 * 1000);
         const weekStartDate = new Date(weekEnd.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-        let weekQuery = supabase
-          .from('sales')
-          .select('total')
-          .gte('created_at', weekStartDate.toISOString())
-          .lt('created_at', weekEnd.toISOString())
-          .eq('status', 'completed');
+        return addBusinessFilter(
+          supabase.from('sales').select('total').gte('created_at', weekStartDate.toISOString()).lt('created_at', weekEnd.toISOString()).eq('status', 'completed')
+        ).then(result => ({
+          date: `Sem ${i + 1}`,
+          total: result.data?.reduce((acc, s) => acc + Number(s.total), 0) || 0,
+          count: result.data?.length || 0,
+        }));
+      });
 
-        if (selectedBusiness && !isAdmin) {
-          weekQuery = weekQuery.eq('business', selectedBusiness);
-        }
+      // Execute daily and weekly queries in parallel
+      const [dailyResults, weeklyResults] = await Promise.all([
+        Promise.all(dailySalesPromises),
+        Promise.all(weeklySalesPromises)
+      ]);
 
-        const { data: weekSalesData } = await weekQuery;
-
-        last4Weeks.push({
-          date: `Sem ${4 - i}`,
-          total: weekSalesData?.reduce((acc, s) => acc + Number(s.total), 0) || 0,
-          count: weekSalesData?.length || 0,
-        });
-      }
-      setWeeklySales(last4Weeks);
+      setDailySales(dailyResults);
+      setWeeklySales(weeklyResults);
 
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
@@ -241,25 +198,13 @@ export const useDashboardStats = () => {
       .channel('sales-changes')
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'sales',
-        },
-        () => {
-          fetchStats();
-        }
+        { event: '*', schema: 'public', table: 'sales' },
+        () => fetchStats()
       )
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'products',
-        },
-        () => {
-          fetchStats();
-        }
+        { event: '*', schema: 'public', table: 'products' },
+        () => fetchStats()
       )
       .subscribe();
 
