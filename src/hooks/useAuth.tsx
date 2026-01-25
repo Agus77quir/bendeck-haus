@@ -56,23 +56,14 @@ export const useAuth = () => {
 
   const fetchUserData = async (userId: string) => {
     try {
-      // Fetch user role
-      const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .single();
+      // Fetch role and profile in parallel for faster loading
+      const [roleResult, profileResult] = await Promise.all([
+        supabase.from('user_roles').select('role').eq('user_id', userId).maybeSingle(),
+        supabase.from('profiles').select('business').eq('id', userId).maybeSingle()
+      ]);
 
-      setIsAdmin(roleData?.role === 'admin');
-
-      // Fetch user profile for business
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('business')
-        .eq('id', userId)
-        .single();
-
-      setUserBusiness(profileData?.business ?? null);
+      setIsAdmin(roleResult.data?.role === 'admin');
+      setUserBusiness(profileResult.data?.business ?? null);
     } catch (error) {
       console.error('Error fetching user data:', error);
     } finally {
