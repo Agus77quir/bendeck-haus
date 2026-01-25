@@ -13,23 +13,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background gear-pattern flex flex-col items-center justify-center relative overflow-hidden">
-      {/* Animated background gears */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <GearIcon 
-          className="absolute -top-20 -left-20 w-80 h-80 text-primary/5" 
-          animate 
-        />
-        <GearIcon 
-          className="absolute -bottom-32 -right-32 w-96 h-96 text-primary/5" 
-          animate 
-          style={{ animationDirection: 'reverse' }}
-        />
-        <GearIcon 
-          className="absolute top-1/4 right-10 w-40 h-40 text-primary/3" 
-          animate 
-        />
-      </div>
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center relative overflow-hidden">
 
       {/* Main content */}
       <div className="relative z-10 text-center mb-12">
@@ -47,21 +31,21 @@ const Index = () => {
       </div>
 
       {/* Business selector cards */}
-      <div className="relative z-10 flex flex-col md:flex-row gap-8 px-4">
+      <div className="relative z-10 flex flex-col md:flex-row gap-10 px-4">
         {/* Bendeck Tools Card */}
         <button
           onClick={() => handleBusinessSelect('bendeck_tools')}
-          className="group glass-card p-8 md:p-10 w-full md:w-96 transition-all duration-500 hover:scale-105 hover:orange-glow cursor-pointer"
+          className="group glass-card p-4 w-full md:w-[420px] transition-all duration-500 hover:scale-105 hover:orange-glow cursor-pointer"
         >
-        <div className="flex flex-col items-center">
-            <div className="w-full h-48 flex items-center justify-center overflow-hidden rounded-lg">
+          <div className="flex flex-col items-center">
+            <div className="w-full h-64 md:h-72 flex items-center justify-center overflow-hidden rounded-xl">
               <img 
                 src={bendeckToolsLogo} 
                 alt="Bendeck Tools Logo" 
                 className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105"
               />
             </div>
-            <div className="w-full h-1 bg-secondary rounded-full overflow-hidden mt-4">
+            <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden mt-4">
               <div className="h-full w-0 group-hover:w-full bg-gradient-to-r from-primary to-orange-light transition-all duration-500" />
             </div>
           </div>
@@ -69,23 +53,23 @@ const Index = () => {
 
         {/* Divider */}
         <div className="hidden md:flex items-center">
-          <div className="w-px h-32 bg-gradient-to-b from-transparent via-primary/30 to-transparent" />
+          <div className="w-px h-48 bg-gradient-to-b from-transparent via-primary/30 to-transparent" />
         </div>
 
         {/* Lüsqtoff Card */}
         <button
           onClick={() => handleBusinessSelect('lusqtoff')}
-          className="group glass-card p-8 md:p-10 w-full md:w-96 transition-all duration-500 hover:scale-105 hover:orange-glow cursor-pointer"
+          className="group glass-card p-4 w-full md:w-[420px] transition-all duration-500 hover:scale-105 hover:orange-glow cursor-pointer"
         >
-        <div className="flex flex-col items-center">
-            <div className="w-full h-48 flex items-center justify-center overflow-hidden rounded-lg">
+          <div className="flex flex-col items-center">
+            <div className="w-full h-64 md:h-72 flex items-center justify-center overflow-hidden rounded-xl">
               <img 
                 src={lusqtoffLogo} 
                 alt="Lüsqtoff Logo" 
                 className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105"
               />
             </div>
-            <div className="w-full h-1 bg-secondary rounded-full overflow-hidden mt-4">
+            <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden mt-4">
               <div className="h-full w-0 group-hover:w-full bg-gradient-to-r from-primary to-orange-light transition-all duration-500" />
             </div>
           </div>

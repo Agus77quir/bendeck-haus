@@ -43,9 +43,9 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 md:pl-4">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pt-12 md:pt-0">
         <div>
           <h1 className="text-3xl font-display font-bold text-foreground">
             Dashboard
