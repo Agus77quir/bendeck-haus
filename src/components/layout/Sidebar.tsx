@@ -19,7 +19,7 @@ import {
   Menu,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 
 interface SidebarProps {
   onSignOut: () => void;
@@ -46,7 +46,7 @@ export const Sidebar = ({ onSignOut }: SidebarProps) => {
 
   const filteredItems = menuItems.filter(item => !item.adminOnly || isAdmin);
 
-  const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => (
+  const SidebarContent = ({ isMobile = false, onNavigate }: { isMobile?: boolean; onNavigate?: () => void }) => (
     <div className={cn(
       "flex flex-col h-full bg-sidebar border-r border-sidebar-border transition-all duration-300",
       collapsed && !isMobile ? "w-20" : "w-64"
@@ -74,6 +74,7 @@ export const Sidebar = ({ onSignOut }: SidebarProps) => {
             <NavLink
               key={item.path}
               to={item.path}
+              onClick={onNavigate}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group",
                 isActive 
@@ -137,7 +138,11 @@ export const Sidebar = ({ onSignOut }: SidebarProps) => {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-64">
-            <SidebarContent isMobile />
+            <SheetClose asChild>
+              <div className="h-full">
+                <SidebarContent isMobile onNavigate={() => {}} />
+              </div>
+            </SheetClose>
           </SheetContent>
         </Sheet>
       </div>

@@ -79,7 +79,7 @@ const Index = () => {
       {/* Footer */}
       <div className="relative z-10 mt-16 text-center">
         <p className="text-muted-foreground/60 text-sm">
-          © 2024 Bendeck Haus. Todos los derechos reservados.
+          © 2026 Bendeck Haus. Todos los derechos reservados.
         </p>
       </div>
     </div>
