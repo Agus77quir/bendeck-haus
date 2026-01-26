@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Package, Plus, Search, Edit, Trash2, AlertTriangle } from 'lucide-react';
+import { Package, Plus, Search, Edit, Trash2, AlertTriangle, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +26,7 @@ import {
 import { useProducts, type Product } from '@/hooks/useProducts';
 import { useBusinessStore } from '@/stores/businessStore';
 import { ProductFormDialog } from '@/components/products/ProductFormDialog';
+import { ProductImportDialog } from '@/components/products/ProductImportDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -40,12 +41,13 @@ const formatCurrency = (amount: number) => {
 export default function Products() {
   const [searchTerm, setSearchTerm] = useState('');
   const [formOpen, setFormOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   
-  const { products, isLoading } = useProducts(searchTerm);
+  const { products, isLoading, refetch } = useProducts(searchTerm);
   const { selectedBusiness } = useBusinessStore();
 
   const businessName = selectedBusiness === 'bendeck_tools' ? 'Bendeck Tools' : 'Lüsqtoff';
@@ -100,10 +102,16 @@ export default function Products() {
           <p className="text-muted-foreground mt-1">{businessName}</p>
         </div>
         
-        <Button onClick={() => setFormOpen(true)} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Nuevo Producto
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setImportOpen(true)} className="gap-2">
+            <Upload className="h-4 w-4" />
+            Importar Excel
+          </Button>
+          <Button onClick={() => setFormOpen(true)} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Nuevo Producto
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -272,6 +280,13 @@ export default function Products() {
         open={formOpen}
         onOpenChange={handleFormClose}
         product={editingProduct}
+      />
+
+      {/* Product Import Dialog */}
+      <ProductImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        onImportComplete={refetch}
       />
 
       {/* Delete Confirmation */}

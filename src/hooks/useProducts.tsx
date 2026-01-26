@@ -9,8 +9,13 @@ export type Product = Tables<'products'>;
 export const useProducts = (searchTerm: string = '') => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
   const { selectedBusiness } = useBusinessStore();
   const { isAdmin } = useAuthStore();
+
+  const refetch = () => {
+    setRefreshKey(prev => prev + 1);
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -42,7 +47,7 @@ export const useProducts = (searchTerm: string = '') => {
     };
 
     fetchProducts();
-  }, [selectedBusiness, isAdmin]);
+  }, [selectedBusiness, isAdmin, refreshKey]);
 
   const filteredProducts = useMemo(() => {
     if (!searchTerm.trim()) return products;
@@ -59,5 +64,6 @@ export const useProducts = (searchTerm: string = '') => {
     products: filteredProducts,
     allProducts: products,
     isLoading,
+    refetch,
   };
 };
