@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Search, Plus, Package } from 'lucide-react';
+import { Search, Plus, Package, ScanBarcode } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useProducts, type Product } from '@/hooks/useProducts';
 import { useCartStore } from '@/stores/cartStore';
+import { BarcodeScanner } from './BarcodeScanner';
 import { cn } from '@/lib/utils';
 
 const formatCurrency = (amount: number) => {
@@ -17,6 +18,7 @@ const formatCurrency = (amount: number) => {
 
 export const ProductSearch = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [scannerOpen, setScannerOpen] = useState(false);
   const { products, isLoading } = useProducts(searchTerm);
   const { addItem, items } = useCartStore();
 
@@ -30,20 +32,46 @@ export const ProductSearch = () => {
     addItem(product);
   };
 
+  const handleBarcodeScan = (code: string) => {
+    setSearchTerm(code);
+    // Find and add product by code
+    const product = products.find(p => p.code === code);
+    if (product && product.stock > 0) {
+      addItem(product);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Search Header */}
       <div className="p-4 border-b border-border">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nombre o código..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nombre o código..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Button 
+            variant="outline" 
+            size="icon"
+            onClick={() => setScannerOpen(true)}
+            title="Escanear código de barras"
+          >
+            <ScanBarcode className="h-4 w-4" />
+          </Button>
         </div>
       </div>
+
+      {/* Barcode Scanner Modal */}
+      <BarcodeScanner 
+        open={scannerOpen} 
+        onOpenChange={setScannerOpen}
+        onScan={handleBarcodeScan}
+      />
 
       {/* Products Grid */}
       <ScrollArea className="flex-1 p-4">
