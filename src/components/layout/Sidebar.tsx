@@ -19,7 +19,7 @@ import {
   Menu,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 interface SidebarProps {
   onSignOut: () => void;
@@ -38,6 +38,7 @@ const menuItems = [
 
 export const Sidebar = ({ onSignOut }: SidebarProps) => {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const { isAdmin } = useAuthStore();
   const { selectedBusiness } = useBusinessStore();
@@ -131,18 +132,14 @@ export const Sidebar = ({ onSignOut }: SidebarProps) => {
 
       {/* Mobile Sidebar */}
       <div className="md:hidden fixed top-4 left-4 z-50">
-        <Sheet>
+        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild>
             <Button size="icon" variant="outline" className="bg-card border-border">
               <Menu className="w-5 h-5" />
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-64">
-            <SheetClose asChild>
-              <div className="h-full">
-                <SidebarContent isMobile onNavigate={() => {}} />
-              </div>
-            </SheetClose>
+            <SidebarContent isMobile onNavigate={() => setMobileOpen(false)} />
           </SheetContent>
         </Sheet>
       </div>
