@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useBusinessStore } from '@/stores/businessStore';
 import { Database } from '@/integrations/supabase/types';
+import { usePushNotifications } from './usePushNotifications';
 
 type Notification = Database['public']['Tables']['notifications']['Row'];
 
@@ -12,8 +13,9 @@ export const useNotifications = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { user, isAdmin } = useAuthStore();
   const { selectedBusiness } = useBusinessStore();
+  const { showNewNotificationAlert, permission } = usePushNotifications();
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -38,7 +40,7 @@ export const useNotifications = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user, isAdmin, selectedBusiness]);
 
   const markAsRead = async (notificationId: string) => {
     try {
@@ -76,6 +78,30 @@ export const useNotifications = () => {
     }
   };
 
+  // Create a notification (for admin use or system triggers)
+  const createNotification = async (
+    title: string,
+    message: string,
+    type: 'info' | 'warning' | 'error' | 'success' = 'info',
+    business?: string
+  ) => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .insert({
+          title,
+          message,
+          type,
+          business: business as any,
+          user_id: null, // Broadcast to all users of the business
+        });
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error creating notification:', error);
+    }
+  };
+
   useEffect(() => {
     fetchNotifications();
 
@@ -91,8 +117,27 @@ export const useNotifications = () => {
         },
         (payload) => {
           const newNotification = payload.new as Notification;
-          setNotifications(prev => [newNotification, ...prev]);
-          setUnreadCount(prev => prev + 1);
+          
+          // Check if notification is relevant for current user
+          const isRelevant = 
+            isAdmin ||
+            newNotification.user_id === user?.id ||
+            newNotification.user_id === null ||
+            newNotification.business === selectedBusiness;
+
+          if (isRelevant) {
+            setNotifications(prev => [newNotification, ...prev]);
+            setUnreadCount(prev => prev + 1);
+            
+            // Show push notification if permission granted
+            if (permission === 'granted') {
+              showNewNotificationAlert(
+                newNotification.title,
+                newNotification.message,
+                newNotification.type || 'info'
+              );
+            }
+          }
         }
       )
       .subscribe();
@@ -100,7 +145,7 @@ export const useNotifications = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, isAdmin, selectedBusiness]);
+  }, [user, isAdmin, selectedBusiness, fetchNotifications, permission, showNewNotificationAlert]);
 
   return {
     notifications,
@@ -108,6 +153,7 @@ export const useNotifications = () => {
     isLoading,
     markAsRead,
     markAllAsRead,
+    createNotification,
     refetch: fetchNotifications,
   };
 };
