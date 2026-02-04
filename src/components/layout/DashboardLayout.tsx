@@ -3,6 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Sidebar } from './Sidebar';
 import { GearIcon } from '@/components/icons/GearIcon';
+import { NotificationPermissionBanner } from '@/components/notifications/NotificationPermissionBanner';
 
 export const DashboardLayout = () => {
   const navigate = useNavigate();
@@ -37,6 +38,7 @@ export const DashboardLayout = () => {
           <Outlet />
         </div>
       </main>
+      <NotificationPermissionBanner />
     </div>
   );
 };

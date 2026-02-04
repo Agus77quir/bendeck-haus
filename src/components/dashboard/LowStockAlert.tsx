@@ -1,10 +1,11 @@
 import { AlertTriangle, Package } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useBusinessStore } from '@/stores/businessStore';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 interface LowStockProduct {
   id: string;
@@ -23,6 +24,8 @@ export const LowStockAlert = ({ className }: LowStockAlertProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const { isAdmin } = useAuthStore();
   const { selectedBusiness } = useBusinessStore();
+  const { showLowStockAlert, permission } = usePushNotifications();
+  const notifiedProducts = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     const fetchLowStockProducts = async () => {
@@ -42,7 +45,19 @@ export const LowStockAlert = ({ className }: LowStockAlertProps) => {
 
         // Filter low stock products
         const lowStock = data?.filter(p => p.stock <= p.min_stock) || [];
-        setProducts(lowStock.sort((a, b) => a.stock - b.stock));
+        const sortedLowStock = lowStock.sort((a, b) => a.stock - b.stock);
+        
+        // Show push notifications for new low stock products
+        if (permission === 'granted') {
+          sortedLowStock.forEach(product => {
+            if (!notifiedProducts.current.has(product.id)) {
+              notifiedProducts.current.add(product.id);
+              showLowStockAlert(product.name, product.stock, product.min_stock);
+            }
+          });
+        }
+        
+        setProducts(sortedLowStock);
       } catch (error) {
         console.error('Error fetching low stock products:', error);
       } finally {
@@ -62,7 +77,20 @@ export const LowStockAlert = ({ className }: LowStockAlertProps) => {
           schema: 'public',
           table: 'products',
         },
-        () => {
+        (payload) => {
+          const updatedProduct = payload.new as any;
+          
+          // Check if stock is now low and we haven't notified yet
+          if (updatedProduct.stock <= updatedProduct.min_stock) {
+            if (permission === 'granted' && !notifiedProducts.current.has(updatedProduct.id)) {
+              notifiedProducts.current.add(updatedProduct.id);
+              showLowStockAlert(updatedProduct.name, updatedProduct.stock, updatedProduct.min_stock);
+            }
+          } else {
+            // Stock was replenished, remove from notified set
+            notifiedProducts.current.delete(updatedProduct.id);
+          }
+          
           fetchLowStockProducts();
         }
       )
@@ -71,7 +99,7 @@ export const LowStockAlert = ({ className }: LowStockAlertProps) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [isAdmin, selectedBusiness]);
+  }, [isAdmin, selectedBusiness, permission, showLowStockAlert]);
 
   if (isLoading) {
     return (
