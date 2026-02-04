@@ -173,6 +173,7 @@ export default function Products() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-[60px]">Imagen</TableHead>
                 <TableHead>Código</TableHead>
                 <TableHead>Nombre</TableHead>
                 <TableHead className="text-right">Precio Compra</TableHead>
@@ -185,7 +186,7 @@ export default function Products() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
+                  <TableCell colSpan={8} className="text-center py-8">
                     <div className="flex items-center justify-center gap-2">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
                       <span className="text-muted-foreground">Cargando productos...</span>
@@ -194,7 +195,7 @@ export default function Products() {
                 </TableRow>
               ) : products.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
+                  <TableCell colSpan={8} className="text-center py-8">
                     <div className="flex flex-col items-center gap-2">
                       <Package className="h-12 w-12 text-muted-foreground/50" />
                       <p className="text-muted-foreground">No se encontraron productos</p>
@@ -206,9 +207,25 @@ export default function Products() {
                   const isLowStock = product.stock <= product.min_stock && product.stock > 0;
                   const isOutOfStock = product.stock === 0;
 
-                  return (
-                    <TableRow key={product.id}>
-                      <TableCell className="font-mono text-sm">{product.code}</TableCell>
+                    return (
+                      <TableRow key={product.id}>
+                        <TableCell>
+                          <div className="w-10 h-10 rounded-md overflow-hidden bg-muted flex items-center justify-center">
+                            {product.image_url ? (
+                              <img
+                                src={product.image_url}
+                                alt={product.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = '/placeholder.svg';
+                                }}
+                              />
+                            ) : (
+                              <Package className="h-5 w-5 text-muted-foreground" />
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-mono text-sm">{product.code}</TableCell>
                       <TableCell>
                         <div>
                           <p className="font-medium">{product.name}</p>

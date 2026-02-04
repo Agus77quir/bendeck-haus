@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -30,6 +30,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useBusinessStore } from '@/stores/businessStore';
 import { toast } from 'sonner';
+import { ProductImageUpload } from './ProductImageUpload';
 import type { Product } from '@/hooks/useProducts';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -44,6 +45,7 @@ const productSchema = z.object({
   stock: z.coerce.number().int().min(0, 'El stock debe ser mayor o igual a 0'),
   min_stock: z.coerce.number().int().min(0, 'El stock mínimo debe ser mayor o igual a 0'),
   business: z.enum(['bendeck_tools', 'lusqtoff'] as const),
+  image_url: z.string().nullable().optional(),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -56,6 +58,7 @@ interface ProductFormDialogProps {
 
 export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDialogProps) => {
   const { selectedBusiness } = useBusinessStore();
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -68,6 +71,7 @@ export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDi
       stock: 0,
       min_stock: 5,
       business: (selectedBusiness as BusinessType) || 'bendeck_tools',
+      image_url: null,
     },
   });
 
@@ -82,7 +86,9 @@ export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDi
         stock: product.stock,
         min_stock: product.min_stock,
         business: product.business,
+        image_url: product.image_url,
       });
+      setImageUrl(product.image_url);
     } else {
       form.reset({
         code: '',
@@ -93,7 +99,9 @@ export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDi
         stock: 0,
         min_stock: 5,
         business: (selectedBusiness as BusinessType) || 'bendeck_tools',
+        image_url: null,
       });
+      setImageUrl(null);
     }
   }, [product, selectedBusiness, form]);
 
@@ -112,6 +120,7 @@ export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDi
             stock: values.stock,
             min_stock: values.min_stock,
             business: values.business,
+            image_url: imageUrl,
           })
           .eq('id', product.id);
 
@@ -130,6 +139,7 @@ export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDi
             stock: values.stock,
             min_stock: values.min_stock,
             business: values.business,
+            image_url: imageUrl,
           });
 
         if (error) throw error;
@@ -160,6 +170,13 @@ export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDi
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* Image Upload */}
+            <ProductImageUpload
+              value={imageUrl}
+              onChange={setImageUrl}
+              productCode={form.watch('code')}
+            />
+
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
