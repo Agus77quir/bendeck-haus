@@ -41,8 +41,8 @@ const Notifications = () => {
     return format(date, "EEEE, d 'de' MMMM yyyy", { locale: es });
   };
 
-  const groupNotificationsByDate = () => {
-    const grouped: GroupedNotifications = {};
+  const groupNotificationsByDate = (): GroupedNotifications => {
+    const grouped: Record<string, Notification[]> = {};
     
     notifications.forEach((notification) => {
       const date = format(parseISO(notification.created_at!), 'yyyy-MM-dd');
