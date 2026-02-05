@@ -12,10 +12,9 @@ import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import type { Tables } from '@/integrations/supabase/types';
 
-interface GroupedNotifications {
-  [date: string]: typeof notifications;
-}
+type Notification = Tables<'notifications'>;
 
 const Notifications = () => {
   const { notifications, unreadCount, refetch } = useNotifications();
