@@ -24,13 +24,13 @@ const Notifications = () => {
   const getNotificationIcon = (type: string | null) => {
     switch (type) {
       case 'warning':
-        return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
+        return <AlertTriangle className="w-5 h-5 text-warning" />;
       case 'sale':
-        return <ShoppingCart className="w-5 h-5 text-green-500" />;
+        return <ShoppingCart className="w-5 h-5 text-primary" />;
       case 'stock':
-        return <Package className="w-5 h-5 text-orange-500" />;
+        return <Package className="w-5 h-5 text-primary" />;
       default:
-        return <Info className="w-5 h-5 text-blue-500" />;
+        return <Info className="w-5 h-5 text-muted-foreground" />;
     }
   };
 
