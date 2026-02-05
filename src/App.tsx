@@ -10,6 +10,7 @@ import Sales from "./pages/Sales";
 import Products from "./pages/Products";
 import Customers from "./pages/Customers";
 import Reports from "./pages/Reports";
+import Notifications from "./pages/Notifications";
 import { DashboardLayout } from "./components/layout/DashboardLayout";
 import NotFound from "./pages/NotFound";
 
