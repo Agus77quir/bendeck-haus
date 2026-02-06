@@ -78,10 +78,11 @@ const {
   };
 
   const handlePushToggle = async () => {
-    if (isSubscribed) {
-      await unsubscribe();
+    if (permission !== 'granted') {
+      const granted = await requestPermission();
+      setNotificationsEnabled(granted);
     } else {
-      await subscribe();
+      setNotificationsEnabled(!notificationsEnabled);
     }
   };
 
