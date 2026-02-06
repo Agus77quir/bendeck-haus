@@ -269,7 +269,7 @@ const {
                   <p className="font-medium">Notificaciones del navegador</p>
                   <p className="text-sm text-muted-foreground">
                     {permission === 'granted'
-                      ? isSubscribed
+                      ? notificationsEnabled
                         ? 'Activadas - Recibirás alertas'
                         : 'Permiso otorgado - Activa las notificaciones'
                       : permission === 'denied'
@@ -278,9 +278,9 @@ const {
                   </p>
                 </div>
                 <Switch
-                  checked={isSubscribed}
+                  checked={notificationsEnabled}
                   onCheckedChange={handlePushToggle}
-                  disabled={pushLoading || permission === 'denied'}
+                  disabled={!isSupported || permission === 'denied'}
                 />
               </div>
             </CardContent>
