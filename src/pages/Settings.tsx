@@ -26,13 +26,13 @@ const Settings = () => {
   const { toast } = useToast();
   const { user, isAdmin } = useAuthStore();
   const { selectedBusiness, setSelectedBusiness } = useBusinessStore();
-  const { 
+const { 
     permission, 
-    isSubscribed, 
-    isLoading: pushLoading, 
-    subscribe, 
-    unsubscribe 
+    isSupported,
+    requestPermission,
   } = usePushNotifications();
+
+  const [notificationsEnabled, setNotificationsEnabled] = useState(permission === 'granted');
 
   const [businessSettings, setBusinessSettings] = useState({
     storeName: selectedBusiness === 'bendeck_tools' ? 'Bendeck Tools' : 'Lüsqtoff',
