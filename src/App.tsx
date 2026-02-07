@@ -10,6 +10,7 @@ import Sales from "./pages/Sales";
 import Products from "./pages/Products";
 import Customers from "./pages/Customers";
 import Accounts from "./pages/Accounts";
+import DatabasePage from "./pages/Database";
 import Reports from "./pages/Reports";
 import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="products" element={<Products />} />
               <Route path="customers" element={<Customers />} />
               <Route path="accounts" element={<Accounts />} />
+              <Route path="database" element={<DatabasePage />} />
               <Route path="reports" element={<Reports />} />
               <Route path="notifications" element={<Notifications />} />
               <Route path="settings" element={<Settings />} />

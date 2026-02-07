@@ -10,6 +10,7 @@ import {
   Package,
   Users,
   CreditCard,
+  Database,
   BarChart3,
   Bell,
   Settings,
