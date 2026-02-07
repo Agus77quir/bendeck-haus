@@ -31,6 +31,7 @@ const menuItems = [
   { icon: Package, label: 'Productos', path: '/dashboard/products', adminOnly: true },
   { icon: Users, label: 'Clientes', path: '/dashboard/customers', adminOnly: false },
   { icon: CreditCard, label: 'Cuentas Corrientes', path: '/dashboard/accounts', adminOnly: false },
+  { icon: Database, label: 'Base de Datos', path: '/dashboard/database', adminOnly: true },
   { icon: BarChart3, label: 'Reportes', path: '/dashboard/reports', adminOnly: true },
   { icon: Bell, label: 'Notificaciones', path: '/dashboard/notifications', adminOnly: false },
   { icon: Settings, label: 'Configuración', path: '/dashboard/settings', adminOnly: true },
