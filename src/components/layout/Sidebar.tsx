@@ -11,6 +11,7 @@ import {
   Users,
   CreditCard,
   Database,
+  Truck,
   BarChart3,
   Bell,
   Settings,
