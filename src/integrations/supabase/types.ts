@@ -188,6 +188,7 @@ export type Database = {
           purchase_price: number
           sale_price: number
           stock: number
+          supplier_id: string | null
           updated_at: string | null
         }
         Insert: {
@@ -204,6 +205,7 @@ export type Database = {
           purchase_price?: number
           sale_price?: number
           stock?: number
+          supplier_id?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -220,6 +222,7 @@ export type Database = {
           purchase_price?: number
           sale_price?: number
           stock?: number
+          supplier_id?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -228,6 +231,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
         ]
@@ -365,6 +375,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      suppliers: {
+        Row: {
+          active: boolean | null
+          address: string | null
+          business: Database["public"]["Enums"]["business_type"]
+          city: string | null
+          contact_name: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          address?: string | null
+          business: Database["public"]["Enums"]["business_type"]
+          city?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          address?: string | null
+          business?: Database["public"]["Enums"]["business_type"]
+          city?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

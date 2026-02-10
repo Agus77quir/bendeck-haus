@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Dialog,
   DialogContent,
@@ -27,7 +28,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { supabase } from '@/integrations/supabase/client';
 import { useBusinessStore } from '@/stores/businessStore';
 import { toast } from 'sonner';
 import { ProductImageUpload } from './ProductImageUpload';
@@ -46,6 +46,7 @@ const productSchema = z.object({
   min_stock: z.coerce.number().int().min(0, 'El stock mínimo debe ser mayor o igual a 0'),
   business: z.enum(['bendeck_tools', 'lusqtoff'] as const),
   image_url: z.string().nullable().optional(),
+  supplier_id: z.string().nullable().optional(),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -59,6 +60,15 @@ interface ProductFormDialogProps {
 export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDialogProps) => {
   const { selectedBusiness } = useBusinessStore();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [suppliers, setSuppliers] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      const { data } = await supabase.from('suppliers').select('id, name').eq('active', true).order('name');
+      setSuppliers(data || []);
+    };
+    fetchSuppliers();
+  }, []);
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -72,6 +82,7 @@ export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDi
       min_stock: 5,
       business: (selectedBusiness as BusinessType) || 'bendeck_tools',
       image_url: null,
+      supplier_id: null,
     },
   });
 
@@ -87,6 +98,7 @@ export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDi
         min_stock: product.min_stock,
         business: product.business,
         image_url: product.image_url,
+        supplier_id: product.supplier_id || null,
       });
       setImageUrl(product.image_url);
     } else {
@@ -100,6 +112,7 @@ export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDi
         min_stock: 5,
         business: (selectedBusiness as BusinessType) || 'bendeck_tools',
         image_url: null,
+        supplier_id: null,
       });
       setImageUrl(null);
     }
@@ -121,6 +134,7 @@ export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDi
             min_stock: values.min_stock,
             business: values.business,
             image_url: imageUrl,
+            supplier_id: values.supplier_id || null,
           })
           .eq('id', product.id);
 
@@ -140,6 +154,7 @@ export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDi
             min_stock: values.min_stock,
             business: values.business,
             image_url: imageUrl,
+            supplier_id: values.supplier_id || null,
           });
 
         if (error) throw error;
@@ -156,7 +171,7 @@ export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {product ? 'Editar Producto' : 'Nuevo Producto'}
@@ -306,6 +321,31 @@ export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDi
                 )}
               />
             </div>
+
+            {/* Supplier Selector */}
+            <FormField
+              control={form.control}
+              name="supplier_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Proveedor (opcional)</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value || ''}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar proveedor" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="none">Sin proveedor</SelectItem>
+                      {suppliers.map(s => (
+                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="flex justify-end gap-3 pt-4">
               <Button 
