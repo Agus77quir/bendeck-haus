@@ -46,6 +46,7 @@ const productSchema = z.object({
   min_stock: z.coerce.number().int().min(0, 'El stock mínimo debe ser mayor o igual a 0'),
   business: z.enum(['bendeck_tools', 'lusqtoff'] as const),
   image_url: z.string().nullable().optional(),
+  supplier_id: z.string().nullable().optional(),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
