@@ -82,6 +82,7 @@ export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDi
       min_stock: 5,
       business: (selectedBusiness as BusinessType) || 'bendeck_tools',
       image_url: null,
+      supplier_id: null,
     },
   });
 
