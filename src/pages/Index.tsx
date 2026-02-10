@@ -62,11 +62,11 @@ const Index = () => {
           className="group glass-card p-4 w-full md:w-[420px] transition-all duration-500 hover:scale-105 hover:orange-glow cursor-pointer"
         >
           <div className="flex flex-col items-center">
-            <div className="w-full h-64 md:h-72 flex items-center justify-center overflow-hidden rounded-xl">
+          <div className="w-full h-48 md:h-56 flex items-center justify-center overflow-hidden rounded-xl">
               <img 
                 src={lusqtoffLogo} 
                 alt="Lüsqtoff Logo" 
-                className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105"
+                className="max-w-full max-h-full object-contain transition-all duration-300 group-hover:scale-105"
               />
             </div>
             <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden mt-4">
