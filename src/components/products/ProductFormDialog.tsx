@@ -60,6 +60,15 @@ interface ProductFormDialogProps {
 export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDialogProps) => {
   const { selectedBusiness } = useBusinessStore();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [suppliers, setSuppliers] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      const { data } = await supabase.from('suppliers').select('id, name').eq('active', true).order('name');
+      setSuppliers(data || []);
+    };
+    fetchSuppliers();
+  }, []);
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
