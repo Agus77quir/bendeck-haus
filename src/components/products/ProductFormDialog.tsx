@@ -28,7 +28,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { supabase } from '@/integrations/supabase/client';
 import { useBusinessStore } from '@/stores/businessStore';
 import { toast } from 'sonner';
 import { ProductImageUpload } from './ProductImageUpload';
