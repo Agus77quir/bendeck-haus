@@ -11,6 +11,7 @@ import Products from "./pages/Products";
 import Customers from "./pages/Customers";
 import Accounts from "./pages/Accounts";
 import DatabasePage from "./pages/Database";
+import Suppliers from "./pages/Suppliers";
 import Reports from "./pages/Reports";
 import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
