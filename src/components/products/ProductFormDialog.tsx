@@ -98,6 +98,7 @@ export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDi
         min_stock: product.min_stock,
         business: product.business,
         image_url: product.image_url,
+        supplier_id: product.supplier_id || null,
       });
       setImageUrl(product.image_url);
     } else {
