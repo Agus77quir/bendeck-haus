@@ -38,11 +38,11 @@ const Index = () => {
           className="group glass-card p-4 w-full md:w-[360px] transition-all duration-500 hover:scale-105 hover:orange-glow cursor-pointer"
         >
           <div className="flex flex-col items-center">
-          <div className="w-full h-48 md:h-56 flex items-center justify-center overflow-hidden rounded-xl p-2">
+          <div className="w-full h-48 md:h-56 flex items-center justify-center overflow-hidden rounded-xl">
               <img 
                 src={bendeckToolsLogo} 
                 alt="Bendeck Tools Logo" 
-                className="w-[95%] h-[95%] object-contain transition-all duration-300 group-hover:scale-105"
+                className="w-full h-full object-contain transition-all duration-300 group-hover:scale-105"
               />
             </div>
             <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden mt-4">
