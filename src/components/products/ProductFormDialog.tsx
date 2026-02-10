@@ -154,6 +154,7 @@ export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDi
             min_stock: values.min_stock,
             business: values.business,
             image_url: imageUrl,
+            supplier_id: values.supplier_id || null,
           });
 
         if (error) throw error;
