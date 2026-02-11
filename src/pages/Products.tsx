@@ -73,7 +73,7 @@ export default function Products() {
       setDeleteConfirmOpen(false);
       setProductToDelete(null);
       // Refresh will happen via the hook
-      window.location.reload();
+      refetch();
     } catch (error) {
       console.error('Error deleting product:', error);
       toast.error('Error al eliminar el producto');
