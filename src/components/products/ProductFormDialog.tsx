@@ -163,7 +163,7 @@ export const ProductFormDialog = ({ open, onOpenChange, product, onSaved }: Prod
       }
 
       onOpenChange(false);
-      window.location.reload();
+      onSaved?.();
     } catch (error) {
       console.error('Error saving product:', error);
       toast.error('Error al guardar el producto');
