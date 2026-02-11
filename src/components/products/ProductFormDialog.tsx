@@ -55,6 +55,7 @@ interface ProductFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   product: Product | null;
+  onSaved?: () => void;
 }
 
 export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDialogProps) => {
