@@ -38,7 +38,7 @@ const Index = () => {
           className="group glass-card p-4 w-full md:w-[360px] transition-all duration-500 hover:scale-105 hover:orange-glow cursor-pointer"
         >
           <div className="flex flex-col items-center">
-          <div className="w-full h-48 md:h-56 flex items-center justify-center overflow-hidden rounded-xl">
+          <div className="w-full h-48 md:h-56 flex items-center justify-center overflow-hidden rounded-xl bg-black">
               <img 
                 src={bendeckToolsLogo} 
                 alt="Bendeck Tools Logo" 
@@ -62,7 +62,7 @@ const Index = () => {
           className="group glass-card p-4 w-full md:w-[360px] transition-all duration-500 hover:scale-105 hover:orange-glow cursor-pointer"
         >
           <div className="flex flex-col items-center">
-          <div className="w-full h-48 md:h-56 flex items-center justify-center overflow-hidden rounded-xl">
+          <div className="w-full h-48 md:h-56 flex items-center justify-center overflow-hidden rounded-xl bg-black">
               <img 
                 src={lusqtoffLogo} 
                 alt="Lüsqtoff Logo" 
