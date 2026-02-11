@@ -519,6 +519,37 @@ const {
               </div>
             </CardContent>
           </Card>
+
+          {isAdmin && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Download className="h-5 w-5" />
+                  Backup de Datos
+                </CardTitle>
+                <CardDescription>
+                  Genera una copia de seguridad de todos los datos del sistema en formato CSV
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  El backup incluye: productos, clientes, ventas, proveedores y categorías.
+                </p>
+                <Button
+                  onClick={handleBackup}
+                  disabled={isBackingUp}
+                  className="flex items-center gap-2"
+                >
+                  {isBackingUp ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                  {isBackingUp ? 'Generando backup...' : 'Descargar Backup CSV'}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         {/* Security Settings */}
