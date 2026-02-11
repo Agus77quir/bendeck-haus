@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/stores/authStore';
 import { useBusinessStore } from '@/stores/businessStore';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Settings as SettingsIcon,
   Store,
@@ -20,6 +21,8 @@ import {
   Users,
   Palette,
   Save,
+  Download,
+  Loader2,
 } from 'lucide-react';
 
 const Settings = () => {
