@@ -21,6 +21,9 @@ import {
   Package,
   CreditCard,
 } from 'lucide-react';
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+} from 'recharts';
 
 const Reports = () => {
   const [period, setPeriod] = useState<ReportPeriod>('daily');
@@ -175,7 +178,6 @@ const Reports = () => {
 
 // Inline component for products bar chart
 const ProductsBarChart = ({ products }: { products: Array<{ id: string; name: string; code: string; totalSold: number; revenue: number }> }) => {
-  const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = require('recharts');
   
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-AR', {

@@ -88,181 +88,202 @@ export const useReports = (period: ReportPeriod, customRange?: DateRange) => {
     };
   }, [dateRange]);
 
-  useEffect(() => {
-    const fetchReports = async () => {
-      setIsLoading(true);
+  const fetchReports = async () => {
+    setIsLoading(true);
+    
+    try {
+      // Fetch sales for current period
+      let salesQuery = supabase
+        .from('sales')
+        .select('id, total, created_at, payment_method')
+        .eq('status', 'completed')
+        .gte('created_at', dateRange.from.toISOString())
+        .lte('created_at', dateRange.to.toISOString());
+
+      if (selectedBusiness) {
+        salesQuery = salesQuery.eq('business', selectedBusiness);
+      }
+
+      const { data: salesData, error: salesError } = await salesQuery;
+
+      if (salesError) throw salesError;
+
+      // Fetch sales for previous period (for comparison)
+      let prevSalesQuery = supabase
+        .from('sales')
+        .select('total')
+        .eq('status', 'completed')
+        .gte('created_at', previousDateRange.from.toISOString())
+        .lte('created_at', previousDateRange.to.toISOString());
+
+      if (selectedBusiness) {
+        prevSalesQuery = prevSalesQuery.eq('business', selectedBusiness);
+      }
+
+      const { data: prevSalesData } = await prevSalesQuery;
+
+      // Fetch sale items with products for top/least sold
+      let itemsQuery = supabase
+        .from('sale_items')
+        .select(`
+          quantity,
+          total,
+          product_id,
+          products!inner(id, name, code, business)
+        `)
+        .gte('created_at', dateRange.from.toISOString())
+        .lte('created_at', dateRange.to.toISOString());
+
+      const { data: itemsData, error: itemsError } = await itemsQuery;
+
+      if (itemsError) throw itemsError;
+
+      // Process sales by date
+      const salesByDateMap = new Map<string, { total: number; count: number }>();
       
-      try {
-        // Fetch sales for current period
-        let salesQuery = supabase
-          .from('sales')
-          .select('id, total, created_at, payment_method')
-          .eq('status', 'completed')
-          .gte('created_at', dateRange.from.toISOString())
-          .lte('created_at', dateRange.to.toISOString());
+      // Initialize all dates in range
+      let intervals: Date[];
+      let dateFormat: string;
+      
+      if (period === 'daily' || period === 'custom') {
+        intervals = eachDayOfInterval({ start: dateRange.from, end: dateRange.to });
+        dateFormat = 'dd/MM';
+      } else if (period === 'weekly') {
+        intervals = eachWeekOfInterval({ start: dateRange.from, end: dateRange.to }, { locale: es });
+        dateFormat = "'Sem' w";
+      } else {
+        intervals = eachMonthOfInterval({ start: dateRange.from, end: dateRange.to });
+        dateFormat = 'MMM yy';
+      }
 
-        if (selectedBusiness) {
-          salesQuery = salesQuery.eq('business', selectedBusiness);
-        }
+      intervals.forEach(date => {
+        const key = format(date, dateFormat, { locale: es });
+        salesByDateMap.set(key, { total: 0, count: 0 });
+      });
 
-        const { data: salesData, error: salesError } = await salesQuery;
-
-        if (salesError) throw salesError;
-
-        // Fetch sales for previous period (for comparison)
-        let prevSalesQuery = supabase
-          .from('sales')
-          .select('total')
-          .eq('status', 'completed')
-          .gte('created_at', previousDateRange.from.toISOString())
-          .lte('created_at', previousDateRange.to.toISOString());
-
-        if (selectedBusiness) {
-          prevSalesQuery = prevSalesQuery.eq('business', selectedBusiness);
-        }
-
-        const { data: prevSalesData } = await prevSalesQuery;
-
-        // Fetch sale items with products for top/least sold
-        let itemsQuery = supabase
-          .from('sale_items')
-          .select(`
-            quantity,
-            total,
-            product_id,
-            products!inner(id, name, code, business)
-          `)
-          .gte('created_at', dateRange.from.toISOString())
-          .lte('created_at', dateRange.to.toISOString());
-
-        const { data: itemsData, error: itemsError } = await itemsQuery;
-
-        if (itemsError) throw itemsError;
-
-        // Process sales by date
-        const salesByDateMap = new Map<string, { total: number; count: number }>();
-        
-        // Initialize all dates in range
-        let intervals: Date[];
-        let dateFormat: string;
+      // Fill in actual sales data
+      (salesData || []).forEach(sale => {
+        const saleDate = new Date(sale.created_at);
+        let key: string;
         
         if (period === 'daily' || period === 'custom') {
-          intervals = eachDayOfInterval({ start: dateRange.from, end: dateRange.to });
-          dateFormat = 'dd/MM';
+          key = format(saleDate, 'dd/MM', { locale: es });
         } else if (period === 'weekly') {
-          intervals = eachWeekOfInterval({ start: dateRange.from, end: dateRange.to }, { locale: es });
-          dateFormat = "'Sem' w";
+          key = format(saleDate, "'Sem' w", { locale: es });
         } else {
-          intervals = eachMonthOfInterval({ start: dateRange.from, end: dateRange.to });
-          dateFormat = 'MMM yy';
+          key = format(saleDate, 'MMM yy', { locale: es });
         }
 
-        intervals.forEach(date => {
-          const key = format(date, dateFormat, { locale: es });
-          salesByDateMap.set(key, { total: 0, count: 0 });
+        const existing = salesByDateMap.get(key) || { total: 0, count: 0 };
+        salesByDateMap.set(key, {
+          total: existing.total + sale.total,
+          count: existing.count + 1,
         });
+      });
 
-        // Fill in actual sales data
-        (salesData || []).forEach(sale => {
-          const saleDate = new Date(sale.created_at);
-          let key: string;
-          
-          if (period === 'daily' || period === 'custom') {
-            key = format(saleDate, 'dd/MM', { locale: es });
-          } else if (period === 'weekly') {
-            key = format(saleDate, "'Sem' w", { locale: es });
-          } else {
-            key = format(saleDate, 'MMM yy', { locale: es });
-          }
+      const salesByDateArray = Array.from(salesByDateMap.entries()).map(([date, data]) => ({
+        date,
+        ...data,
+      }));
 
-          const existing = salesByDateMap.get(key) || { total: 0, count: 0 };
-          salesByDateMap.set(key, {
-            total: existing.total + sale.total,
-            count: existing.count + 1,
-          });
+      setSalesByDate(salesByDateArray);
+
+      // Process payment methods
+      const paymentMethodsMap = new Map<string, { total: number; count: number }>();
+      (salesData || []).forEach(sale => {
+        const method = sale.payment_method || 'Sin especificar';
+        const existing = paymentMethodsMap.get(method) || { total: 0, count: 0 };
+        paymentMethodsMap.set(method, {
+          total: existing.total + sale.total,
+          count: existing.count + 1,
         });
+      });
 
-        const salesByDateArray = Array.from(salesByDateMap.entries()).map(([date, data]) => ({
-          date,
-          ...data,
-        }));
+      const paymentMethodsArray = Array.from(paymentMethodsMap.entries()).map(([method, data]) => ({
+        method: translatePaymentMethod(method),
+        ...data,
+      }));
 
-        setSalesByDate(salesByDateArray);
+      setPaymentMethods(paymentMethodsArray);
 
-        // Process payment methods
-        const paymentMethodsMap = new Map<string, { total: number; count: number }>();
-        (salesData || []).forEach(sale => {
-          const method = sale.payment_method || 'Sin especificar';
-          const existing = paymentMethodsMap.get(method) || { total: 0, count: 0 };
-          paymentMethodsMap.set(method, {
-            total: existing.total + sale.total,
-            count: existing.count + 1,
-          });
-        });
-
-        const paymentMethodsArray = Array.from(paymentMethodsMap.entries()).map(([method, data]) => ({
-          method: translatePaymentMethod(method),
-          ...data,
-        }));
-
-        setPaymentMethods(paymentMethodsArray);
-
-        // Process products
-        const productsMap = new Map<string, ProductSaleData>();
+      // Process products
+      const productsMap = new Map<string, ProductSaleData>();
+      
+      (itemsData || []).forEach((item: any) => {
+        const product = item.products;
+        if (!product) return;
         
-        (itemsData || []).forEach((item: any) => {
-          const product = item.products;
-          if (!product) return;
-          
-          // Filter by business if selected
-          if (selectedBusiness && product.business !== selectedBusiness) return;
+        // Filter by business if selected
+        if (selectedBusiness && product.business !== selectedBusiness) return;
 
-          const existing = productsMap.get(product.id) || {
-            id: product.id,
-            name: product.name,
-            code: product.code,
-            totalSold: 0,
-            revenue: 0,
-          };
+        const existing = productsMap.get(product.id) || {
+          id: product.id,
+          name: product.name,
+          code: product.code,
+          totalSold: 0,
+          revenue: 0,
+        };
 
-          productsMap.set(product.id, {
-            ...existing,
-            totalSold: existing.totalSold + item.quantity,
-            revenue: existing.revenue + item.total,
-          });
+        productsMap.set(product.id, {
+          ...existing,
+          totalSold: existing.totalSold + item.quantity,
+          revenue: existing.revenue + item.total,
         });
+      });
 
-        const productsArray = Array.from(productsMap.values());
-        const sortedByQuantity = [...productsArray].sort((a, b) => b.totalSold - a.totalSold);
-        
-        setTopProducts(sortedByQuantity.slice(0, 10));
-        setLeastProducts(sortedByQuantity.filter(p => p.totalSold > 0).slice(-5).reverse());
+      const productsArray = Array.from(productsMap.values());
+      const sortedByQuantity = [...productsArray].sort((a, b) => b.totalSold - a.totalSold);
+      
+      setTopProducts(sortedByQuantity.slice(0, 10));
+      setLeastProducts(sortedByQuantity.filter(p => p.totalSold > 0).slice(-5).reverse());
 
-        // Calculate stats
-        const totalRevenue = (salesData || []).reduce((sum, sale) => sum + sale.total, 0);
-        const totalSales = salesData?.length || 0;
-        const averageTicket = totalSales > 0 ? totalRevenue / totalSales : 0;
-        const previousPeriodRevenue = (prevSalesData || []).reduce((sum, sale) => sum + sale.total, 0);
-        const revenueChange = previousPeriodRevenue > 0 
-          ? ((totalRevenue - previousPeriodRevenue) / previousPeriodRevenue) * 100 
-          : 0;
+      // Calculate stats
+      const totalRevenue = (salesData || []).reduce((sum, sale) => sum + sale.total, 0);
+      const totalSales = salesData?.length || 0;
+      const averageTicket = totalSales > 0 ? totalRevenue / totalSales : 0;
+      const previousPeriodRevenue = (prevSalesData || []).reduce((sum, sale) => sum + sale.total, 0);
+      const revenueChange = previousPeriodRevenue > 0 
+        ? ((totalRevenue - previousPeriodRevenue) / previousPeriodRevenue) * 100 
+        : 0;
 
-        setStats({
-          totalSales,
-          totalRevenue,
-          averageTicket,
-          previousPeriodRevenue,
-          revenueChange,
-        });
+      setStats({
+        totalSales,
+        totalRevenue,
+        averageTicket,
+        previousPeriodRevenue,
+        revenueChange,
+      });
 
-      } catch (error) {
-        console.error('Error fetching reports:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    } catch (error) {
+      console.error('Error fetching reports:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchReports();
+  }, [dateRange, previousDateRange, selectedBusiness]);
+
+  // Realtime: re-fetch when sales or sale_items change
+  useEffect(() => {
+    const channel = supabase
+      .channel('reports-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'sales' },
+        () => fetchReports()
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'sale_items' },
+        () => fetchReports()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [dateRange, previousDateRange, selectedBusiness]);
 
   return {
