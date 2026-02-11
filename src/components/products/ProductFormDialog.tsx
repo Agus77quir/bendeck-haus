@@ -55,9 +55,10 @@ interface ProductFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   product: Product | null;
+  onSaved?: () => void;
 }
 
-export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDialogProps) => {
+export const ProductFormDialog = ({ open, onOpenChange, product, onSaved }: ProductFormDialogProps) => {
   const { selectedBusiness } = useBusinessStore();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [suppliers, setSuppliers] = useState<{ id: string; name: string }[]>([]);
@@ -76,8 +77,8 @@ export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDi
       code: '',
       name: '',
       description: '',
-      purchase_price: 0,
-      sale_price: 0,
+      purchase_price: '' as unknown as number,
+      sale_price: '' as unknown as number,
       stock: 0,
       min_stock: 5,
       business: (selectedBusiness as BusinessType) || 'bendeck_tools',
@@ -106,8 +107,8 @@ export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDi
         code: '',
         name: '',
         description: '',
-        purchase_price: 0,
-        sale_price: 0,
+         purchase_price: '' as unknown as number,
+         sale_price: '' as unknown as number,
         stock: 0,
         min_stock: 5,
         business: (selectedBusiness as BusinessType) || 'bendeck_tools',
@@ -162,7 +163,7 @@ export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDi
       }
 
       onOpenChange(false);
-      window.location.reload();
+      onSaved?.();
     } catch (error) {
       console.error('Error saving product:', error);
       toast.error('Error al guardar el producto');

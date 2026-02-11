@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/stores/authStore';
 import { useBusinessStore } from '@/stores/businessStore';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Settings as SettingsIcon,
   Store,
@@ -20,6 +21,8 @@ import {
   Users,
   Palette,
   Save,
+  Download,
+  Loader2,
 } from 'lucide-react';
 
 const Settings = () => {
@@ -48,6 +51,7 @@ const {
     creditAlerts: true,
     emailDigest: false,
   });
+  const [isBackingUp, setIsBackingUp] = useState(false);
 
   const [systemSettings, setSystemSettings] = useState({
     autoLogout: 30,
@@ -75,6 +79,46 @@ const {
       title: 'Configuración del sistema guardada',
       description: 'Los ajustes se aplicarán a partir de ahora',
     });
+  };
+
+  const handleBackup = async () => {
+    setIsBackingUp(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({ title: 'Error', description: 'Debes iniciar sesión', variant: 'destructive' });
+        return;
+      }
+
+      const response = await supabase.functions.invoke('generate-backup', {});
+      
+      if (response.error) throw response.error;
+
+      // Download the CSV
+      const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `backup_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: 'Backup generado',
+        description: 'El archivo CSV se descargó correctamente',
+      });
+    } catch (error) {
+      console.error('Backup error:', error);
+      toast({
+        title: 'Error al generar backup',
+        description: 'Intenta nuevamente más tarde',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsBackingUp(false);
+    }
   };
 
   const handlePushToggle = async () => {
@@ -475,6 +519,37 @@ const {
               </div>
             </CardContent>
           </Card>
+
+          {isAdmin && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Download className="h-5 w-5" />
+                  Backup de Datos
+                </CardTitle>
+                <CardDescription>
+                  Genera una copia de seguridad de todos los datos del sistema en formato CSV
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  El backup incluye: productos, clientes, ventas, proveedores y categorías.
+                </p>
+                <Button
+                  onClick={handleBackup}
+                  disabled={isBackingUp}
+                  className="flex items-center gap-2"
+                >
+                  {isBackingUp ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                  {isBackingUp ? 'Generando backup...' : 'Descargar Backup CSV'}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         {/* Security Settings */}
