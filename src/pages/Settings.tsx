@@ -81,6 +81,46 @@ const {
     });
   };
 
+  const handleBackup = async () => {
+    setIsBackingUp(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({ title: 'Error', description: 'Debes iniciar sesión', variant: 'destructive' });
+        return;
+      }
+
+      const response = await supabase.functions.invoke('generate-backup', {});
+      
+      if (response.error) throw response.error;
+
+      // Download the CSV
+      const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `backup_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: 'Backup generado',
+        description: 'El archivo CSV se descargó correctamente',
+      });
+    } catch (error) {
+      console.error('Backup error:', error);
+      toast({
+        title: 'Error al generar backup',
+        description: 'Intenta nuevamente más tarde',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsBackingUp(false);
+    }
+  };
+
   const handlePushToggle = async () => {
     if (permission !== 'granted') {
       const granted = await requestPermission();
