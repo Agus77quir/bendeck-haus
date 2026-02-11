@@ -297,6 +297,7 @@ export default function Products() {
         open={formOpen}
         onOpenChange={handleFormClose}
         product={editingProduct}
+        onSaved={refetch}
       />
 
       {/* Product Import Dialog */}
