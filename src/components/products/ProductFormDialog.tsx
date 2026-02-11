@@ -58,7 +58,7 @@ interface ProductFormDialogProps {
   onSaved?: () => void;
 }
 
-export const ProductFormDialog = ({ open, onOpenChange, product }: ProductFormDialogProps) => {
+export const ProductFormDialog = ({ open, onOpenChange, product, onSaved }: ProductFormDialogProps) => {
   const { selectedBusiness } = useBusinessStore();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [suppliers, setSuppliers] = useState<{ id: string; name: string }[]>([]);
