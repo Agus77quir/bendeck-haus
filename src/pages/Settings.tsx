@@ -51,6 +51,7 @@ const {
     creditAlerts: true,
     emailDigest: false,
   });
+  const [isBackingUp, setIsBackingUp] = useState(false);
 
   const [systemSettings, setSystemSettings] = useState({
     autoLogout: 30,
