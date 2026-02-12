@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Sidebar } from './Sidebar';
 import { GearIcon } from '@/components/icons/GearIcon';
 import { NotificationPermissionBanner } from '@/components/notifications/NotificationPermissionBanner';
+import { ChatBot } from '@/components/chat/ChatBot';
 
 export const DashboardLayout = () => {
   const navigate = useNavigate();
@@ -39,6 +40,7 @@ export const DashboardLayout = () => {
         </div>
       </main>
       <NotificationPermissionBanner />
+      <ChatBot />
     </div>
   );
 };

@@ -1,29 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import * as XLSX from "https://esm.sh/xlsx@0.18.5";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
-
-function escapeCsv(val: unknown): string {
-  if (val === null || val === undefined) return '';
-  const str = String(val);
-  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-    return `"${str.replace(/"/g, '""')}"`;
-  }
-  return str;
-}
-
-function toCsv(rows: Record<string, unknown>[]): string {
-  if (rows.length === 0) return '';
-  const headers = Object.keys(rows[0]);
-  const lines = [headers.join(',')];
-  for (const row of rows) {
-    lines.push(headers.map(h => escapeCsv(row[h])).join(','));
-  }
-  return lines.join('\n');
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -41,7 +23,6 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    // Verify user is admin
     const userClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -54,7 +35,6 @@ serve(async (req) => {
 
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Check admin role
     const { data: roleData } = await adminClient
       .from('user_roles')
       .select('role')
@@ -67,7 +47,6 @@ serve(async (req) => {
       });
     }
 
-    // Fetch all tables data
     const [products, customers, sales, saleItems, suppliers, categories] = await Promise.all([
       adminClient.from('products').select('*').then(r => r.data || []),
       adminClient.from('customers').select('*').then(r => r.data || []),
@@ -77,27 +56,29 @@ serve(async (req) => {
       adminClient.from('categories').select('*').then(r => r.data || []),
     ]);
 
+    const wb = XLSX.utils.book_new();
+
+    const addSheet = (name: string, data: Record<string, unknown>[]) => {
+      const ws = XLSX.utils.json_to_sheet(data.length > 0 ? data : [{}]);
+      XLSX.utils.book_append_sheet(wb, ws, name);
+    };
+
+    addSheet('Productos', products);
+    addSheet('Clientes', customers);
+    addSheet('Ventas', sales);
+    addSheet('Items de Venta', saleItems);
+    addSheet('Proveedores', suppliers);
+    addSheet('Categorias', categories);
+
+    const xlsBuffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
     const timestamp = new Date().toISOString().slice(0, 10);
 
-    // Build a multi-sheet CSV (separated by markers)
-    const sections = [
-      `=== PRODUCTOS (${timestamp}) ===\n${toCsv(products)}`,
-      `\n\n=== CLIENTES (${timestamp}) ===\n${toCsv(customers)}`,
-      `\n\n=== VENTAS (${timestamp}) ===\n${toCsv(sales)}`,
-      `\n\n=== ITEMS DE VENTA (${timestamp}) ===\n${toCsv(saleItems)}`,
-      `\n\n=== PROVEEDORES (${timestamp}) ===\n${toCsv(suppliers)}`,
-      `\n\n=== CATEGORIAS (${timestamp}) ===\n${toCsv(categories)}`,
-    ];
-
-    const csvContent = sections.join('');
-
-    // Return CSV as downloadable content
-    return new Response(csvContent, {
+    return new Response(xlsBuffer, {
       status: 200,
       headers: {
         ...corsHeaders,
-        'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': `attachment; filename="backup_${timestamp}.csv"`,
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': `attachment; filename="backup_${timestamp}.xlsx"`,
       },
     });
   } catch (error) {
