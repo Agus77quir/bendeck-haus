@@ -90,24 +90,30 @@ const {
         return;
       }
 
-      const response = await supabase.functions.invoke('generate-backup', {});
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-backup`,
+        {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      );
       
-      if (response.error) throw response.error;
+      if (!response.ok) throw new Error('Backup failed');
 
-      // Download the CSV
-      const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
+      const blob = await response.blob();
+      const downloadUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
-      a.download = `backup_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.href = downloadUrl;
+      a.download = `backup_${new Date().toISOString().slice(0, 10)}.xlsx`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      URL.revokeObjectURL(downloadUrl);
 
       toast({
         title: 'Backup generado',
-        description: 'El archivo CSV se descargó correctamente',
+        description: 'El archivo Excel se descargó correctamente',
       });
     } catch (error) {
       console.error('Backup error:', error);
@@ -528,7 +534,7 @@ const {
                   Backup de Datos
                 </CardTitle>
                 <CardDescription>
-                  Genera una copia de seguridad de todos los datos del sistema en formato CSV
+                  Genera una copia de seguridad de todos los datos del sistema en formato Excel (XLSX) con hojas separadas por tabla
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -545,7 +551,7 @@ const {
                   ) : (
                     <Download className="h-4 w-4" />
                   )}
-                  {isBackingUp ? 'Generando backup...' : 'Descargar Backup CSV'}
+                  {isBackingUp ? 'Generando backup...' : 'Descargar Backup Excel'}
                 </Button>
               </CardContent>
             </Card>
